@@ -2,6 +2,8 @@
 
 A simple demo code to read dense matrices from files and solve linear systems with them.
 
+![SSE Boost Testing exercise](https://github.com/mohamad-altaweel/testing-boost-exercise/actions/workflows/main.yml/badge.svg)
+
 ## Folder Structure
 
 - `cmake`: Third-party CMake modules
