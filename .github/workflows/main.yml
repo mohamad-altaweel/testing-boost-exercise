@@ -1,0 +1,49 @@
+name: Build & Test workflow
+
+on: [push]
+
+jobs:
+  style:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Install clang formatter"
+        run: sudo apt install clang-format
+      - name: "Check style of src"
+        run: clang-format --dry-run -Werror src/*
+      - name: "Check style of tests"
+        run: clang-format --dry-run -Werror tests/*.cpp
+  build:
+    needs: style
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Install dependencies"
+        run: sudo apt install cmake libeigen3-dev libyaml-cpp-dev libboost-all-dev
+      - name: "Create build directory"
+        run: mkdir build 
+      - name: "Configure CMake and build" 
+        run: cd build && cmake .. && make -j
+      - name: "Prepare for artifact upload"
+        run: tar -cvf build.tar build
+      - name: "Artifact upload"
+        uses: actions/upload-artifact@v2
+        with:
+          name: build
+          path: build.tar
+          retention-days: 14
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Install dependencies"
+        run: sudo apt install cmake libeigen3-dev libyaml-cpp-dev libboost-test-dev
+      - name: "Download artifact"
+        uses: actions/download-artifact@v2
+        with:
+          name: build
+      - name: "Unzip artifact"
+        run: tar -xf build.tar
+      - name: "Run tests" 
+        run: cd build && make test
